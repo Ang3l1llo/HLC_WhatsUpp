@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WhatsApp</string>
+    <string name="chats">Chats</string>
+    <string name="status">Estado</string>
+    <string name="calls">Llamadas</string>
+    <string name="search_hint">Buscar...</string>
+</resources>
