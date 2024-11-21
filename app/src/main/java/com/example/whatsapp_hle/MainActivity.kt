@@ -3,8 +3,8 @@ package com.example.whatsapp_hle
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.camera.core.Camera
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,10 +28,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.whatsapp_hle.R
+import androidx.navigation.NavHostController
 import com.example.whatsapp_hle.ui.theme.WhatsAppTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.example.whatsapp_hle.Navigation.MainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,22 +45,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+//Para la barra superior de la pantalla
 @Composable
-fun MainScreen() {
-    Scaffold(
-        topBar = { TopBar() },
-        content = { paddingValues ->
-            TabView(paddingValues)
-        }
-    )
-}
-
-@Composable
-fun TopBar() { //Para la barra superior de la pantalla
+fun TopBar() {
     var expanded by remember { mutableStateOf(false) } // Estado para mostrar/ocultar el menú desplegable
     var isSearching by remember { mutableStateOf(false) } // Estado para mostrar/ocultar busqueda
     var searchText by remember { mutableStateOf("") } // Estado para el texto de la busqueda
 
+    //Para crear una barra superior
     TopAppBar(
         backgroundColor = colorResource(id = R.color.whatsapp_green_dark),
         title = {
@@ -140,8 +132,9 @@ fun TopBar() { //Para la barra superior de la pantalla
     )
 }
 
+//Para elegir entre chats, llamadas y estados
 @Composable
-fun TabView(paddingValues: PaddingValues) { //Para las pestañas
+fun TabView(paddingValues: PaddingValues, navController: NavHostController) {
     val tabTitles = listOf(
         stringResource(id = R.string.chats),
         stringResource(id = R.string.status),
@@ -168,15 +161,16 @@ fun TabView(paddingValues: PaddingValues) { //Para las pestañas
             }
         }
         when (selectedTab) {
-            0 -> ChatScreen()
+            0 -> ChatScreen(navController)
             1 -> StatusScreen()
             2 -> CallScreen()
         }
     }
 }
 
+//La pantalla de los chats
 @Composable
-fun ChatScreen() {
+fun ChatScreen(navController: NavHostController) {
     val contacts = listOf(
         Contacto(
             nombre = "Raul Tolai",
@@ -196,35 +190,38 @@ fun ChatScreen() {
             ultimoMensaje = "Me he comprao un nuevo escape pa la moto",
             fechaMensaje = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).parse("14/11/2024 13:30")!!
         )
-
     )
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Text(text = "Chats", style = MaterialTheme.typography.h5, color = Color.Black)
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
             items(contacts) { contact ->
-                ChatItem(contact = contact)
+                ChatItem(contact = contact) {
+                    navController.navigate("chat_detail/${contact.nombre}")
+                }
             }
         }
     }
 }
 
+//Las características de cada chat
 @Composable
-fun ChatItem(contact: Contacto) {
-    // Formato de la fecha
+fun ChatItem(contact: Contacto, onClick: () -> Unit) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     val formattedDate = dateFormat.format(contact.fechaMensaje)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(8.dp)
             .height(80.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Imagen del contacto
         Image(
             painter = painterResource(id = contact.imagen),
             contentDescription = "Imagen de ${contact.nombre}",
@@ -234,7 +231,6 @@ fun ChatItem(contact: Contacto) {
             contentScale = ContentScale.Crop
         )
 
-        // Información del contacto y último mensaje
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = contact.nombre,
@@ -253,7 +249,6 @@ fun ChatItem(contact: Contacto) {
             )
         }
 
-        // Fecha del último mensaje
         Text(
             text = formattedDate,
             style = MaterialTheme.typography.body2,
@@ -262,6 +257,7 @@ fun ChatItem(contact: Contacto) {
     }
 }
 
+//La pantalla de estado
 @Composable
 fun StatusScreen() {
     Box(
@@ -275,6 +271,7 @@ fun StatusScreen() {
     }
 }
 
+//La pantalla de llamadas
 @Composable
 fun CallScreen() {
     Box(
@@ -287,3 +284,4 @@ fun CallScreen() {
         )
     }
 }
+
